@@ -4,8 +4,9 @@ const mongoose = require('mongoose')
 let schema = new mongoose.Schema({
   username:String,
   time:String,
-  startTime:String,
-  endTime:String
+  timeStamp:Number,
+  startTime:Number,
+  endTime:Number
 })
 const Time = mongoose.model('time',schema)
 
