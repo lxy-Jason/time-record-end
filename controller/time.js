@@ -80,8 +80,7 @@ const getAllUserWeekTime = async ctx => {
       }
     }
   ])
-  // console.log(usersArr);
-  if (usersArr) {
+  if (usersArr.length) {
     ctx.body = {
       code: 200,
       msg: '获取本周所有用户时长成功',
