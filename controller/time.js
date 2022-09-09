@@ -2,6 +2,8 @@ const Time = require('../model/time')
 const Users = require('../model/users')
 const getMonday = require('../utils/getMonday')
 const getWeekTime = require('../utils/getWeekTime')
+const getRank = require('../utils/getRank')
+const getMonthFirstDay = require('../utils/getMonthFirstDay')
 
 //时间上传
 const upload = async ctx => {
@@ -60,14 +62,25 @@ const getWeek = async ctx => {
 const getAllUserWeekTime = async ctx => {
   var monday = getMonday(new Date()).getTime()
 
+  let usersArr = await getRank(monday)
+  if (usersArr.length) {
+    ctx.body = {
+      code: 200,
+      msg: '获取本周所有用户时长成功',
+      usersArr,
+    }
+  }
+  else {
+    ctx.body = {
+      code: 300,
+      msg: '本周还没有用户学习'
+    }
+  }
+}
+//获取所有用户学习总时长
+const getTotalTime = async ctx => {
   let usersArr = await Time.aggregate([
     {
-      '$match': {
-        'endTime': {
-          '$gte': monday
-        }
-      }
-    }, {
       '$group': {
         '_id': '$username',
         'totalWeekTime': {
@@ -83,21 +96,40 @@ const getAllUserWeekTime = async ctx => {
   if (usersArr.length) {
     ctx.body = {
       code: 200,
-      msg: '获取本周所有用户时长成功',
+      msg: '获取所有用户总时长成功',
       usersArr,
     }
   }
   else {
     ctx.body = {
-      code:300,
-      msg:'本周还没有用户学习'
+      code: 300,
+      msg: '还没有用户开始学习'
+    }
+  }
+}
+//获取所有用户本月学习时长
+const getAllUserMonthTime = async ctx => {
+  let monthFirstDay = getMonthFirstDay().getTime()
+  let usersArr = await getRank(monthFirstDay)
+  if (usersArr.length) {
+    ctx.body = {
+      code: 200,
+      msg: '获取本月所有用户时长成功',
+      usersArr,
+    }
+  }
+  else {
+    ctx.body = {
+      code: 300,
+      msg: '本月还没有用户学习'
     }
   }
 }
 
-
 module.exports = {
   upload,
   getWeek,
-  getAllUserWeekTime
+  getAllUserWeekTime,
+  getTotalTime,
+  getAllUserMonthTime
 }
