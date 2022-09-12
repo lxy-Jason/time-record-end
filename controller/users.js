@@ -1,4 +1,5 @@
 const Users = require('../model/users')
+const Time = require('../model/time')
 let jwt = require('jsonwebtoken')
 
 //用户登录
@@ -83,7 +84,8 @@ const usernameUpdate = async ctx => {
   console.log(username, newName);
 
   let isDouble = false
-  await Users.findOne({ username }).then(rel => {
+  await Users.findOne({ "username":newName }).then(rel => {
+    console.log(rel);
     if (rel) isDouble = true
   })
   if (isDouble) {
@@ -93,11 +95,13 @@ const usernameUpdate = async ctx => {
     }
     return
   }
+ 
   await Users.updateOne({ "username": username }, { $set: { "username": newName } }).then(rel => {
     if (rel) {
       ctx.body = {
         code: 200,
-        msg: '修改用户名成功'
+        msg: '修改用户名成功',
+        newName
       }
     }
     else {
@@ -111,6 +115,12 @@ const usernameUpdate = async ctx => {
       code: 500,
       msg: '服务端错误',
       err
+    }
+  })
+
+  await Time.updateMany({"username":username},{ $set: { "username": newName } }).then(rel => {
+    if(rel){
+      console.log(rel);
     }
   })
 }
