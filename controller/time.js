@@ -29,10 +29,14 @@ const upload = async ctx => {
     }
   })
 }
-//获取本周学习时间
+//获取用户本周学习时间
 const getWeek = async ctx => {
   let { username } = ctx.query
   var monday = getMonday(new Date()).getTime();
+  let usersArr = await getRank(monday)
+  let rank = usersArr.findIndex((item) => {
+    return item._id === username
+  })
   await Time.find({ username, endTime: { $gte: monday } }).then(res => {
     if (res) {
       let time = getWeekTime(res)
@@ -40,7 +44,8 @@ const getWeek = async ctx => {
       ctx.body = {
         code: 200,
         time,
-        msg: '本周学习时长'
+        msg: '本周学习时长',
+        rank
       }
     }
     else {
@@ -64,6 +69,9 @@ const getAllUserWeekTime = async ctx => {
 
   let usersArr = await getRank(monday)
   if (usersArr.length) {
+    usersArr.forEach((item,index) => {
+      item["rank"] = index
+    })
     ctx.body = {
       code: 200,
       msg: '获取本周所有用户时长成功',

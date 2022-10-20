@@ -38,7 +38,6 @@ const login = async ctx => {
 const register = async ctx => {
   let { username, password } = ctx.request.body
   let isDouble = false
-
   await Users.findOne({ username }).then(rel => {
     if (rel) isDouble = true
   })
@@ -63,6 +62,7 @@ const register = async ctx => {
         username,
         token
       }
+  
     }
     else {
       ctx.body = {
