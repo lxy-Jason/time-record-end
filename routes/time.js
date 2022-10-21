@@ -1,5 +1,5 @@
 const router = require('koa-router')()
-const {upload,getWeek,getAllUserWeekTime,getTotalTime,getAllUserMonthTime,getUserEverydayTime} = require('../controller/time')
+const {upload,getWeek,getAllUserWeekTime,getTotalTime,getAllUserMonthTime,getUserEverydayTime,getUserTodayTime} = require('../controller/time')
 router.prefix('/time')
 
 //时间上传
@@ -14,4 +14,6 @@ router.get('/getTotalTime',getTotalTime)
 router.get('/getAllUserMonthTime',getAllUserMonthTime)
 //获取用户本周时长分布
 router.get('/getUserEverydayTime',getUserEverydayTime)
+//获取用户当天学习时长分布
+router.get("/getUserTodayTime",getUserTodayTime)
 module.exports = router

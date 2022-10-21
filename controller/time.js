@@ -4,7 +4,12 @@ const getMonday = require("../utils/getMonday");
 const getWeekTime = require("../utils/getWeekTime");
 const getRank = require("../utils/getRank");
 const getMonthFirstDay = require("../utils/getMonthFirstDay");
-const { getEveryWeekTimePart } = require("../utils/moment");
+const {
+  getEveryWeekTimePart,
+  getTodayStart,
+  getEveryHoursTimePart,
+} = require("../utils/moment");
+const getTimeInterval = require("../utils/getTimeInterval")
 //时间上传
 const upload = async (ctx) => {
   let { username, time, timeStamp, startTime, endTime } = ctx.request.body;
@@ -133,50 +138,66 @@ const getAllUserMonthTime = async (ctx) => {
     };
   }
 };
+
 //获取用户一周内学习时间的分布
 const getUserEverydayTime = async (ctx) => {
   let { username } = ctx.query;
   let monday = getMonday(new Date()).getTime();
-  const map = new Map();
-  await Time.find({ username, endTime: { $gte: monday } }).then((res) => {
-    if (res) {
-      //获取一周内每天的起始时间和结束时间
-      const timeStampArr = Array.from({ length: 7 }).map((_, i) => [
-        i + 1,
-        ...getEveryWeekTimePart(i),
-      ]);
-      for (let i = 0; i < res.length; i++) {
-        const { endTime } = res[i];
-        const day = timeStampArr.find(
-          (time) => time[1] <= endTime && time[2] >= endTime
-        );
-        if (day) {
-          if (!map.has(day[0])) {
-            map.set(day[0], []);
-          }
-          map.get(day[0]).push(res[i]);
-        }
+  await Time.find({ username, endTime: { $gte: monday } })
+    .then((res) => {
+      if (res) {
+        //获取一周内每天的起始时间和结束时间
+        const result = getTimeInterval(7,res,getEveryWeekTimePart)
+        ctx.body = {
+          code: 200,
+          mag: "获取用户本周学习时长分布完成",
+          data: result,
+        };
+      } else {
+        ctx.body = {
+          code: 300,
+          mag: "本周还没有开始学习",
+        };
       }
-      const result = Array(7).fill(0);
-      for (const [key, value] of map) {
-        let dayTimeStamp = value.reduce((pre, val) => pre + val.timeStamp, 0);
-        console.log(dayTimeStamp);
-        result[key] = dayTimeStamp;
-      }
-      console.log(result);
+    })
+    .catch((err) => {
       ctx.body = {
-        code:200,
-        mag:'获取用户本周学习时长分布完成',
-        data:result
+        code: 500,
+        msg: "服务端错误",
+        err,
+      };
+    });
+};
+//获取用户一天内时间分布
+const getUserTodayTime = async (ctx) => {
+  let { username } = ctx.query;
+  let todayStart = getTodayStart();
+  await Time.find({ username, endTime: { $gte: todayStart } })
+    .then((res) => {
+      if (res) {
+        //获取今天内每两个小时的起始时间和结束时间戳
+        const result = getTimeInterval(12,res,getEveryHoursTimePart)
+        // console.log(result);
+        ctx.body = {
+          code: 200,
+          msg: "获取用户当天时长分布成功",
+          data:result
+        };
       }
-    }
-    else{
+      else{
+        ctx.body = {
+          code: 300,
+          msg: "今天还没开始学习",
+        };
+      }
+    })
+    .catch((err) => {
       ctx.body = {
-        code:300,
-        mag:'本周还没有开始学习',
-      }
-    }
-  });
+        code: 500,
+        msg: "服务端错误",
+        err,
+      };
+    });
 };
 module.exports = {
   upload,
@@ -184,5 +205,6 @@ module.exports = {
   getAllUserWeekTime,
   getTotalTime,
   getAllUserMonthTime,
-  getUserEverydayTime
+  getUserEverydayTime,
+  getUserTodayTime
 };
