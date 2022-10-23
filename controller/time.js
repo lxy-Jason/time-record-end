@@ -58,7 +58,7 @@ const getWeek = async (ctx) => {
     };
   }
   else {
-    cxy.body = {
+    ctx.body = {
       code: 300,
       time: "00:00:00",
       msg: "本周还未学习",
@@ -144,6 +144,7 @@ const getUserEverydayTime = async (ctx) => {
       if (res) {
         //获取一周内每天的起始时间和结束时间
         const result = getTimeInterval(7,res,getEveryWeekTimePart)
+        console.log(result);
         ctx.body = {
           code: 200,
           mag: "获取用户本周学习时长分布完成",

@@ -19,7 +19,7 @@ const getTimeInterval = (num, res, fn) => {
   const result = Array(num).fill(0);
   for (const [key, value] of map) {
     let dayTimeStamp = value.reduce((pre, val) => pre + val.timeStamp, 0);
-    result[key] = dayTimeStamp;
+    result[key-1] = dayTimeStamp;
   }
   console.log(result);
   return result;
