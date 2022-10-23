@@ -10,6 +10,8 @@ const {
   getEveryHoursTimePart,
 } = require("../utils/moment");
 const getTimeInterval = require("../utils/getTimeInterval")
+const getTotalTime = require("../utils/getTotalTime")
+
 //时间上传
 const upload = async (ctx) => {
   let { username, time, timeStamp, startTime, endTime } = ctx.request.body;
@@ -40,35 +42,29 @@ const getWeek = async (ctx) => {
   let { username } = ctx.query;
   var monday = getMonday(new Date()).getTime();
   let usersArr = await getRank(monday);
-  let rank = usersArr.findIndex((item) => {
-    return item._id === username;
+  let userInfo = usersArr.find((item,index) => {
+    if(item._id === username){
+      item.rank = index
+    }
+    return item._id === username
   });
-  await Time.find({ username, endTime: { $gte: monday } })
-    .then((res) => {
-      if (res) {
-        let time = getWeekTime(res);
-        console.log(time);
-        ctx.body = {
-          code: 200,
-          time,
-          msg: "本周学习时长",
-          rank,
-        };
-      } else {
-        cxy.body = {
-          code: 300,
-          time: "00:00:00",
-          msg: "本周还未学习",
-        };
-      }
-    })
-    .catch((err) => {
-      ctx.body = {
-        code: 500,
-        msg: "服务器错误",
-        err,
-      };
-    });
+  if(userInfo){
+    let time = getTotalTime(userInfo.totalWeekTime)
+    ctx.body = {
+      code: 200,
+      time,
+      msg: "本周学习时长",
+      rank:userInfo.rank
+    };
+  }
+  else {
+    cxy.body = {
+      code: 300,
+      time: "00:00:00",
+      msg: "本周还未学习",
+    };
+  }
+ 
 };
 // 获取所有用户本周学习时间
 const getAllUserWeekTime = async (ctx) => {
@@ -92,7 +88,7 @@ const getAllUserWeekTime = async (ctx) => {
   }
 };
 //获取所有用户学习总时长
-const getTotalTime = async (ctx) => {
+const getAlluserTime = async (ctx) => {
   let usersArr = await Time.aggregate([
     {
       $group: {
@@ -203,7 +199,7 @@ module.exports = {
   upload,
   getWeek,
   getAllUserWeekTime,
-  getTotalTime,
+  getAlluserTime,
   getAllUserMonthTime,
   getUserEverydayTime,
   getUserTodayTime
