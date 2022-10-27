@@ -12,6 +12,7 @@ const cors = require('koa2-cors')
 const index = require('./routes/index')
 const users = require('./routes/users')
 const time = require('./routes/time')
+const upload = require('./routes/upload')
 
 // error handler
 onerror(app)
@@ -46,6 +47,7 @@ app.use(async (ctx, next) => {
 app.use(index.routes(), index.allowedMethods())
 app.use(users.routes(), users.allowedMethods())
 app.use(time.routes(), time.allowedMethods())
+app.use(upload.routes(), time.allowedMethods())
 
 // error-handling
 app.on('error', (err, ctx) => {
