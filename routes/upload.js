@@ -11,8 +11,7 @@ let storage = multer.diskStorage({
     let date = new Date();
     let year = date.getFullYear();
     let month = date.getMonth() + 1;
-    let day = date.getDate();
-    let dir = "public/uploads/" + year + month + day;
+    let dir = "public/uploads/" + year + month;
     console.log(dir);
     //判断目录是否存在
     if (!fs.existsSync(dir)) {
@@ -24,8 +23,7 @@ let storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     //设置上传文件的名称
-    let fileName =
-      file.fieldname + "-" + Date.now() + path.extname(file.originalname);
+    let fileName = Date.now() + path.extname(file.originalname);
     cb(null, fileName);
   },
 });
@@ -36,11 +34,8 @@ router.post("/portrait", upload.single("imgFile"), async (ctx) => {
   let path = ctx.req.file.path;
   let { username } = ctx.header;
   path = ctx.origin + "" + path.replace("public", "");
-  console.log(typeof path);
-  console.log(username);
-  const test = await Users.find({username})
-  console.log(test);
-  await Users.updateOne({ username }, { $set: { portrait: path }})
+  deleteImg(username)
+  await Users.updateOne({ username }, { $set: { portrait: path } })
     .then((res) => {
       if (res) {
         console.log(res);
@@ -64,5 +59,22 @@ router.post("/portrait", upload.single("imgFile"), async (ctx) => {
       };
     });
 });
-
+//删除图片
+const deleteImg = async (username) => {
+  const { portrait } = await Users.findOne({ username });
+  console.log(portrait);
+  if (portrait) {
+    let path = portrait.match(/uploads\\(\d{6})\\(.*)/);
+    console.log(path);
+    let url = "public/" + path[0];
+    let dir = path[1];
+    let fileName = path[2];
+    let files = [];
+    if (fs.existsSync(url)) {
+      //判断给定的路径是否存在
+      fs.unlinkSync(url);
+      console.log("删除图片成功");
+    }
+  }
+};
 module.exports = router;
