@@ -9,14 +9,17 @@ const getRank = async(time) => {
           '$gte': time
         }
       }
-    }, {
+    },
+    {
       '$group': {
-        '_id': '$username',
+        '_id':'$username',
         'totalWeekTime': {
           '$sum': '$timeStamp'
-        }
+        },
+
       }
-    }, {
+    },
+    {
       '$sort': {
         'totalWeekTime': -1
       }

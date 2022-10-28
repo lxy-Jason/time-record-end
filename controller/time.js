@@ -40,6 +40,7 @@ const upload = async (ctx) => {
 //获取用户本周学习时间
 const getWeek = async (ctx) => {
   let { username } = ctx.query;
+  let {portrait} = await Users.findOne({username})
   var monday = getMonday(new Date()).getTime();
   let usersArr = await getRank(monday);
   let userInfo = usersArr.find((item,index) => {
@@ -54,7 +55,8 @@ const getWeek = async (ctx) => {
       code: 200,
       time,
       msg: "本周学习时长",
-      rank:userInfo.rank
+      rank:userInfo.rank,
+      portrait
     };
   }
   else {
@@ -62,19 +64,28 @@ const getWeek = async (ctx) => {
       code: 300,
       time: "00:00:00",
       msg: "本周还未学习",
+      portrait
     };
   }
  
 };
+const getUserPortrait = async(usersArr) => {
+  let usersPortraitArr = await Users.find()
+    usersArr.forEach((item, index) => {
+      item["rank"] = index;
+      let user = usersPortraitArr.find((user) => item._id === user.username) //获取用户头像
+      if(user && user.portrait){
+        item["portrait"] = user.portrait
+      }
+  })
+}
 // 获取所有用户本周学习时间
 const getAllUserWeekTime = async (ctx) => {
   var monday = getMonday(new Date()).getTime();
-
   let usersArr = await getRank(monday);
   if (usersArr.length) {
-    usersArr.forEach((item, index) => {
-      item["rank"] = index;
-    });
+    await getUserPortrait(usersArr)
+    console.log(usersArr);
     ctx.body = {
       code: 200,
       msg: "获取本周所有用户时长成功",
@@ -105,6 +116,7 @@ const getAlluserTime = async (ctx) => {
     },
   ]);
   if (usersArr.length) {
+    await getUserPortrait(usersArr)
     ctx.body = {
       code: 200,
       msg: "获取所有用户总时长成功",
@@ -122,6 +134,7 @@ const getAllUserMonthTime = async (ctx) => {
   let monthFirstDay = getMonthFirstDay().getTime();
   let usersArr = await getRank(monthFirstDay);
   if (usersArr.length) {
+    await getUserPortrait(usersArr)
     ctx.body = {
       code: 200,
       msg: "获取本月所有用户时长成功",
