@@ -32,13 +32,15 @@ let upload = multer({ storage });
 //上传图片的接口
 router.post("/portrait", upload.single("imgFile"), async (ctx) => {
   let path = ctx.req.file.path;
+  console.log(ctx.header);
   let { username } = ctx.header;
+  username = decodeURIComponent(username)
+  console.log(username);
   path = ctx.origin + "" + path.replace("public", "");
   deleteImg(username)
   await Users.updateOne({ username }, { $set: { portrait: path } })
     .then((res) => {
       if (res) {
-        console.log(res);
         ctx.body = {
           url: path,
           code: 200,
@@ -62,14 +64,9 @@ router.post("/portrait", upload.single("imgFile"), async (ctx) => {
 //删除图片
 const deleteImg = async (username) => {
   const { portrait } = await Users.findOne({ username });
-  console.log(portrait);
   if (portrait) {
     let path = portrait.match(/uploads\\(\d{6})\\(.*)/);
-    console.log(path);
     let url = "public/" + path[0];
-    let dir = path[1];
-    let fileName = path[2];
-    let files = [];
     if (fs.existsSync(url)) {
       //判断给定的路径是否存在
       fs.unlinkSync(url);
