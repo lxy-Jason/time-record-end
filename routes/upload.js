@@ -70,7 +70,7 @@ router.post("/portrait", upload.single("imgFile"), async (ctx) => {
 const deleteImg = async (username) => {
   const res = await Users.findOne({ username }); //第一次上传时没图片的bug
   if (res.portrait) {
-    let path = portrait.match(/uploads\\(\d{6})\\(.*)/);
+    let path = res.portrait.match(/uploads\\(\d{6})\\(.*)/);
     let url = "public/" + path[0];
     if (fs.existsSync(url)) {
       //判断给定的路径是否存在
