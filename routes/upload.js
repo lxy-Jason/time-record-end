@@ -1,3 +1,8 @@
+/*
+ * @Author: xiangyue_li
+ * @Date: 2023-08-27 15:07:17
+ * @LastEditors: xiangyue_li
+ */
 const Users = require("../model/users");
 const multer = require("koa-multer");
 const fs = require("fs");
@@ -63,8 +68,8 @@ router.post("/portrait", upload.single("imgFile"), async (ctx) => {
 });
 //删除图片
 const deleteImg = async (username) => {
-  const { portrait } = await Users.findOne({ username });
-  if (portrait) {
+  const res = await Users.findOne({ username }); //第一次上传时没图片的bug
+  if (res.portrait) {
     let path = portrait.match(/uploads\\(\d{6})\\(.*)/);
     let url = "public/" + path[0];
     if (fs.existsSync(url)) {
